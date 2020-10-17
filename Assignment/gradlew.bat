@@ -1,71 +1,84 @@
-package com.example.librarymanagement.activities;
+@if "%DEBUG%" == "" @echo off
+@rem ##########################################################################
+@rem
+@rem  Gradle startup script for Windows
+@rem
+@rem ##########################################################################
 
-import androidx.appcompat.app.AppCompatActivity;
+@rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
+set DIRNAME=%~dp0
+if "%DIRNAME%" == "" set DIRNAME=.
+set APP_BASE_NAME=%~n0
+set APP_HOME=%DIRNAME%
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.example.librarymanagement.R;
-import com.example.librarymanagement.models.Book;
-import com.example.librarymanagement.models.BorrowedBook;
-import com.example.librarymanagement.networks.Server;
-import com.example.librarymanagement.networks.SessionManager;
-import com.squareup.picasso.Picasso;
+@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+set DEFAULT_JVM_OPTS=
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+@rem Find java.exe
+if defined JAVA_HOME goto findJavaFromJavaHome
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+set JAVA_EXE=java.exe
+%JAVA_EXE% -version >NUL 2>&1
+if "%ERRORLEVEL%" == "0" goto init
 
-import static java.lang.String.valueOf;
+echo.
+echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+echo.
+echo Please set the JAVA_HOME variable in your environment to match the
+echo location of your Java installation.
 
-public class BorrowedBookActivity extends AppCompatActivity {
+goto fail
 
-    SessionManager sessionManager;
-    ListView listView;
-    Toolbar toolbar;
+:findJavaFromJavaHome
+set JAVA_HOME=%JAVA_HOME:"=%
+set JAVA_EXE=%JAVA_HOME%/bin/java.exe
 
-    public int idUser;
-    public ArrayList<BorrowedBook> listBorrowedBook;
-    public ArrayList<Book> listBook;
-    RequestQueue requestQueue;
+if exist "%JAVA_EXE%" goto init
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_borrowed_book);
+echo.
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
+echo.
+echo Please set the JAVA_HOME variable in your environment to match the
+echo location of your Java installation.
 
-        mapping();
+goto fail
 
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Trang chủ");
+:init
+@rem Get command-line arguments, handling Windows variants
 
-        Intent intent = getIntent();
-        listBook = (ArrayList<Book>) intent.getSerializableExtra(HomeActivity.BOOK);
+if not "%OS%" == "Windows_NT" goto win9xME_args
 
-        sessionManager = new SessionManager(this);
-        idUser = sessionManager.getUser();
+:win9xME_args
+@rem Slurp the command line arguments.
+set CMD_LINE_ARGS=
+set _SKIP=2
 
-        requestQueue = Volley.newRequestQueue(BorrowedBookActivity.this);
-        getListBorrowedBook();
+:win9xME_args_slurp
+if "x%~1" == "x" goto execute
 
-        CustomAdapterBook customAdap
+set CMD_LINE_ARGS=%*
+
+:execute
+@rem Setup the command line
+
+set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+
+@rem Execute Gradle
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%
+
+:end
+@rem End local scope for the variables with windows NT shell
+if "%ERRORLEVEL%"=="0" goto mainEnd
+
+:fail
+rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+rem the _cmd.exe /c_ return code!
+if  not "" == "%GRADLE_EXIT_CONSOLE%" exit 1
+exit /b 1
+
+:mainEnd
+if "%OS%"=="Windows_NT" endlocal
+
+:omega

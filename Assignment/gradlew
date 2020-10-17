@@ -1,120 +1,172 @@
-package com.example.librarymanagement.activities;
+#!/usr/bin/env sh
 
-import androidx.appcompat.app.AppCompatActivity;
+##############################################################################
+##
+##  Gradle start up script for UN*X
+##
+##############################################################################
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
+# Attempt to set APP_HOME
+# Resolve links: $0 may be a link
+PRG="$0"
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.example.librarymanagement.R;
-import com.example.librarymanagement.models.Book;
-import com.example.librarymanagement.models.BorrowedBook;
-import com.example.librarymanagement.networks.Server;
-import com.example.librarymanagement.networks.SessionManager;
-import com.squareup.picasso.Picasso;
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS=""
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
 
-import static java.lang.String.valueOf;
+warn () {
+    echo "$*"
+}
 
-public class BorrowedBookActivity extends AppCompatActivity {
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
 
-    SessionManager sessionManager;
-    ListView listView;
-    Toolbar toolbar;
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+darwin=false
+nonstop=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MINGW* )
+    msys=true
+    ;;
+  NONSTOP* )
+    nonstop=true
+    ;;
+esac
 
-    public int idUser;
-    public ArrayList<BorrowedBook> listBorrowedBook;
-    public ArrayList<Book> listBook;
-    RequestQueue requestQueue;
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_borrowed_book);
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
 
-        mapping();
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD="java"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
 
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Trang chủ");
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+fi
 
-        Intent intent = getIntent();
-        listBook = (ArrayList<Book>) intent.getSerializableExtra(HomeActivity.BOOK);
+# Increase the maximum file descriptors if we can.
+if [ "$cygwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
+        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
+    fi
+fi
 
-        sessionManager = new SessionManager(this);
-        idUser = sessionManager.getUser();
+# For Darwin, add options to specify how the application appears in the dock
+if $darwin; then
+    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
+fi
 
-        requestQueue = Volley.newRequestQueue(BorrowedBookActivity.this);
-        getListBorrowedBook();
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin ; then
+    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+    JAVACMD=`cygpath --unix "$JAVACMD"`
 
-        CustomAdapterBook customAdapterBook = new BorrowedBookActivity.CustomAdapterBook();
-        listView.setAdapter(customAdapterBook);
-    }
+    # We build the pattern for arguments to be converted via cygpath
+    ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
+    SEP=""
+    for dir in $ROOTDIRSRAW ; do
+        ROOTDIRS="$ROOTDIRS$SEP$dir"
+        SEP="|"
+    done
+    OURCYGPATTERN="(^($ROOTDIRS))"
+    # Add a user-defined pattern to the cygpath arguments
+    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
+        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
+    fi
+    # Now convert the arguments - kludge to limit ourselves to /bin/sh
+    i=0
+    for arg in "$@" ; do
+        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
+        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
 
-    private void getListBorrowedBook() {
-        listBorrowedBook = new ArrayList<BorrowedBook>();
-        String url = Server.GETBORROWEDBOOK + "?id=" + valueOf(idUser);
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        for (int i = 0; i < response.length(); i++) {
-                            try {
-                                JSONObject jsonObject = response.getJSONObject(i);
-                                listBorrowedBook.add(new BorrowedBook(
-                                        jsonObject.getInt("bill_id"),
-                                        jsonObject.getInt("user_id"),
-                                        jsonObject.getInt("book_id"),
-                                        jsonObject.getString("dateOfBorrowed"),
-                                        jsonObject.getString("dateOfPurchase"),
-                                        jsonObject.getInt("state")
-                                ));
-                                for (int j = 0; j < listBook.size(); j++){
-                                    if (listBook.get(j).getBook_id() == listBorrowedBook.get(i).getBook_id()){
-                                        listBorrowedBook.get(i).setName(listBook.get(j).getName());
-                                        listBorrowedBook.get(i).setImage(listBook.get(j).getImage());
-                                    }
-                                }
+        if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
+            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
+        else
+            eval `echo args$i`="\"$arg\""
+        fi
+        i=$((i+1))
+    done
+    case $i in
+        (0) set -- ;;
+        (1) set -- "$args0" ;;
+        (2) set -- "$args0" "$args1" ;;
+        (3) set -- "$args0" "$args1" "$args2" ;;
+        (4) set -- "$args0" "$args1" "$args2" "$args3" ;;
+        (5) set -- "$args0" "$args1" "$args2" "$args3" "$args4" ;;
+        (6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" ;;
+        (7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" ;;
+        (8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" ;;
+        (9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8" ;;
+    esac
+fi
 
-                                System.out.println(listBorrowedBook.get(i).getImage());
-                                System.out.println(listBorrowedBook.get(i).getName());
-                                System.out.println(listBorrowedBook.get(i).getBill_id());
-                                System.out.println(listBorrowedBook.get(i).getBook_id());
-                                System.out.println(listBorrowedBook.get(i).getUser_id());
-                                System.out.println(listBorrowedBook.get(i).getDateOfBorrowed());
-                                System.out.println(listBorrowedBook.get(i).getDateOfPurchase());
-                                System.out.println(listBorrowedBook.get(i).getState());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(BorrowedBookActivity.this,"Không lấy được dữ kiệu người dùng",Toast.LENGTH_SHORT).show();
-                    }
-                });
-    
+# Escape application args
+save () {
+    for i do printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/" ; done
+    echo " "
+}
+APP_ARGS=$(save "$@")
+
+# Collect all arguments for the java command, following the shell quoting and substitution rules
+eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS "\"-Dorg.gradle.appname=$APP_BASE_NAME\"" -classpath "\"$CLASSPATH\"" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"
+
+# by default we should be in the correct project dir, but when run from Finder on Mac, the cwd is wrong
+if [ "$(uname)" = "Darwin" ] && [ "$HOME" = "$PWD" ]; then
+  cd "$(dirname "$0")"
+fi
+
+exec "$JAVACMD" "$@"
