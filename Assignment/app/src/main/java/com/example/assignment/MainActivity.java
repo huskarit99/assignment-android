@@ -3,84 +3,91 @@ package com.example.assignment;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.ArrayList;
+import static java.lang.Math.round;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayList<Info> listInfo;
-    TextView edtSelectedName;
-    ListView lvInfo;
-    CustomAdapterListInfo customAdapterListInfo;
+    ProgressBar myBarHorizontal;
+    EditText txtDataBox;
+    TextView tvAccum;
+    Button btnDoItAgain;
+    int globalVar = 0, accum = 0, progressStep = 1; // progressStep = 1
+    final int MAX_PROGRESS = 100;
+    int timeDelay = 0;
+    Handler myHandler = new Handler();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
-        this.getSupportActionBar().hide();
-
-        mapping();
-        init();
-        customAdapterListInfo = new CustomAdapterListInfo();
-        lvInfo.setAdapter(customAdapterListInfo);
-
-        lvInfo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        myBarHorizontal = findViewById(R.id.myBarHor);
+        txtDataBox = findViewById(R.id.txtBox1);
+        btnDoItAgain = findViewById(R.id.btnDoItAgain);
+        tvAccum = findViewById(R.id.tvAccum);
+        btnDoItAgain.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                edtSelectedName.setText(listInfo.get(position).getName());
+            public void onClick(View v) {
+                if (txtDataBox.getText().toString().equals(""))
+                    return;
+                timeDelay = round(Integer.parseInt(txtDataBox.getText().toString()) / 10);
+                btnDoItAgain.setTextColor(Integer.parseInt("999999", 16) + 0xFF000000);
+                btnDoItAgain.setEnabled(false);
+                txtDataBox.setEnabled(false);
+                start();
             }
         });
     }
 
-    private void init() {
-        listInfo = new ArrayList<>();
-        listInfo.add(new Info("Nguyen Thai Hoc", "0974748525"));
-        listInfo.add(new Info("Nguyen Tan Phuc", "1298377219"));
-        listInfo.add(new Info("Nguyen Minh Thuc", "89234798324"));
-        listInfo.add(new Info("Le Nguyen An Khang", "1283798432"));
-        listInfo.add(new Info("Le Nguyen Nhut Truong", "45680992345"));
-        listInfo.add(new Info("Luong Thai Anh Duy", "3920092345"));
-        listInfo.add(new Info("Le Hoang Minh", "93458792324"));
-        listInfo.add(new Info("Dinh Nho Liem", "23857798598"));
-        listInfo.add(new Info("Bao Toan", "823784978932"));
+    protected void start() {
+        txtDataBox.setText("");
+        btnDoItAgain.setEnabled(false);
+        accum = 0;
+        myBarHorizontal.setMax(MAX_PROGRESS);
+        myBarHorizontal.setProgress(0);
+        myBarHorizontal.setVisibility(View.VISIBLE);
+        Thread myBackgroundThread = new Thread(backgroundTask, "backAlias1");
+        myBackgroundThread.start();
     }
 
-    class CustomAdapterListInfo extends BaseAdapter {
-
+    private Runnable foregroundRunnable = new Runnable() {
         @Override
-        public int getCount() {
-            return listInfo.size();
+        public void run() {
+            try {
+                myBarHorizontal.incrementProgressBy(progressStep);
+                accum += progressStep;
+                tvAccum.setText(Integer.toString(accum) + "%");
+                if (accum >= myBarHorizontal.getMax()) {
+                    btnDoItAgain.setTextColor(Integer.parseInt("000000", 16) + 0xFF000000);
+                    btnDoItAgain.setEnabled(true);
+                    txtDataBox.setEnabled(true);
+                }
+            } catch (Exception e) {
+                Log.e("<<foregroundTask>>", e.getMessage());
+            }
         }
+    };
 
+    private Runnable backgroundTask = new Runnable() {
         @Override
-        public Object getItem(int position) {
-            return null;
+        public void run() { // busy work goes here...
+            try {
+                for (int n = 0; n < 100; n++) {
+                    Thread.sleep(timeDelay);
+                    globalVar++;
+                    myHandler.post(foregroundRunnable);
+                }
+            } catch (InterruptedException e) {
+                Log.e("<<foregroundTask>>", e.getMessage());
+            }
         }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View view, ViewGroup parent) {
-            view = getLayoutInflater().inflate(R.layout.row_info, null);
-            TextView name = view.findViewById(R.id.edtName);
-            TextView phoneNumber = view.findViewById(R.id.edtPhoneNumber);
-
-            name.setText(listInfo.get(position).getName());
-            phoneNumber.setText(listInfo.get(position).getPhoneNumber());
-            return view;
-        }
-    }
-
-    private void mapping() {
-        edtSelectedName = findViewById(R.id.edtSelectedName);
-        lvInfo = findViewById(R.id.lvInfo);
-    }
+    };
 }
